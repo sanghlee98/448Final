@@ -26,6 +26,8 @@ def Read(id, path):
 inputDir = '../Images/'
 outputDir = '../Samples/'
 
+# test
+
 # 1. Collect correspondce pairs
 
 
