@@ -28,9 +28,9 @@ def Read(path):
 inputDir = '../Images/'
 outputDir = '../Samples/'
 
-# 1. Collect correspondce pairs
-im1 = Read(inputDir + "a_1.jpeg")
-im2 = Read(inputDir + "a_2.jpeg")
+# 1. Collect correspondence pairs
+im1 = Read(inputDir + "c_1.jpeg")
+im2 = Read(inputDir + "c_2.jpeg")
 src, dst = get_points(im1, im2)
 
 # 2. Generate homography H
@@ -47,9 +47,22 @@ A = [[src[0][0], src[0][1], 1, 0, 0, 0, -src[0][0]*dst[0][0], -src[0][1]*dst[0][
 A = np.array(A)
 b = np.array([dst[0][0], dst[1][0], dst[2][0], dst[3][0], dst[0][1], dst[1][1], dst[2][1], dst[3][1]])
 H = np.reshape(np.concatenate((np.linalg.solve(A, b), [1])), (3, 3))
-print(H)
+#print(H)
 
 # 3. Determine bounds of the new combined mage
+left_top = np.dot(H, [0, 0, 1])
+left_top = np.array([left_top[0]/left_top[2], left_top[1]/left_top[2]]).astype(int)
+right_top = np.dot(H, [len(im1)-1, 0, 1])
+right_top = np.array([right_top[0]/right_top[2], right_top[1]/right_top[2]]).astype(int)
+left_bot = np.dot(H, [0, len(im1[0])-1, 1])
+left_bot = np.array([left_bot[0]/left_bot[2], left_bot[1]/left_bot[2]]).astype(int)
+right_bot = np.dot(H, [len(im1)-1, len(im1[0])-1, 1])
+right_bot = np.array([right_bot[0]/right_bot[2], right_bot[1]/right_bot[2]]).astype(int)
+
+print(left_top)
+print(right_top)
+print(left_bot)
+print(right_bot)
 
 
 # 4. Perform inverse warp
