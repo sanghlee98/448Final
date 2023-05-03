@@ -69,7 +69,6 @@ width = x_max - x_min
 height = y_max - y_min
 tmp = np.array(np.zeros((width, height, 3), dtype=np.float32))
 
-
 # 4. Perform inverse warp
 H_inverse = np.linalg.inv(H)
 for i in range(0, len(im1)):
@@ -81,14 +80,24 @@ for i in range(0, len(im1)):
         original[0] = np.clip(original[0], 0, len(im1) - 1)
         original[1] = np.clip(original[1], 0, len(im1[0]) - 1)
 
-        # perform bilnear interpolation on 4 coordinates
-        # a = original[0] - math.floor(original[0])
-        # b = original[1] - math.floor(original[1])
-        # (i, j)            = (math.floor(original[0]), math.floor(original[1])) 
-        # (i + 1, j)        = (math.ceil(original[0]), math.floor(original[1]))
-        # (i, j + 1)        = (math.floor(original[0]), math.ceil(original[1]))
-        # (i + 1, j + 1)    = (math.ceil(original[0]), math.ceil(original[1]))
+        # perform bilinear interpolation on 4 coordinates
+        a = original[0] - math.floor(original[0])
+        b = original[1] - math.floor(original[1])
+        
+        # interpolate
+        bottom_left = (math.floor(original[0]), math.floor(original[1])) 
+        bottom_right = (math.ceil(original[0]), math.floor(original[1]))
+        top_left = (math.floor(original[0]), math.ceil(original[1]))
+        top_right = (math.ceil(original[0]), math.ceil(original[1]))
 
+        # weighted terms
+        bottom_left_color = (1-a) * (1-b) * im1[bottom_left[0]][bottom_left[1]]
+        bottom_right_color = a * (1-b) * im1[bottom_right[0]][bottom_right[1]]
+        top_left_color = a * b * im1[top_left[0]][top_left[1]]
+        top_right_color = (1-a) * b * im1[top_right[0]][top_right[1]]
+
+        # dont know what to put for the index of tmp
+        # tmp[][] = bottom_left_color + bottom_right_color + top_left_color + top_right_color
 
 # 5. Overlay remaining image content onto the warped image content
 start = [-x_min, -y_min]
