@@ -29,8 +29,8 @@ inputDir = '../Images/'
 outputDir = '../Samples/'
 
 # 1. Collect correspondence pairs
-im1 = Read(inputDir + "d_2.jpeg")
-im2 = Read(inputDir + "d_1.jpeg")
+im1 = Read(inputDir + "b_2.jpeg")
+im2 = Read(inputDir + "b_1.jpeg")
 src, dst = get_points(im1, im2)
 
 
@@ -69,28 +69,31 @@ width = x_max - x_min + 1
 height = y_max - y_min + 1
 tmp = np.array(np.zeros((height, width, 3), dtype=np.float32))
 
+
 # 4. Perform inverse warp
-# Fix this part to do proper inverse warping
 H_inverse = np.linalg.inv(H)
+for i in range(0, len(tmp)):
+    for j in range(0, len(tmp[0])):
+        original = np.dot(H_inverse, [i + x_min, j + y_min, 1])
+        original = np.array([original[0]/original[2], original[1]/original[2]])
+
+        if (original[0] >= 0 and original[0] < len(im1) - 1 and original[1] >= 0 and original[1] < len(im1[0]) - 1):
+            a = original[0] - math.floor(original[0])
+            b = original[1] - math.floor(original[1])
+
+            bottom_left = (math.floor(original[1]), math.floor(original[0])) 
+            bottom_right = (math.ceil(original[1]), math.floor(original[0]))
+            top_left = (math.floor(original[1]), math.ceil(original[0]))
+            top_right = (math.ceil(original[1]), math.ceil(original[0]))
+
+            color = (1 - a)*(1 - b)*im1[bottom_left] + a*(1 - b)*im1[bottom_right] + a*b*im1[top_right] + (1 - a)*b*im1[top_left]
+            tmp[j, i] = color     
+
 
 # 5. Overlay remaining image content onto the warped image content
-# start = [-x_min, -y_min]
-# for i in range(0, len(im2) - 1):
-#     for j in range(0, len(im2[0]) -1):
-#         tmp[start[1] + i][start[0] + j] = im2[i][j]
+start = [-x_min, -y_min]
+for i in range(0, len(im2) - 1):
+    for j in range(0, len(im2[0]) -1):
+        tmp[start[1] + i][start[0] + j] = im2[i][j]
 
-plt.imsave(outputDir + "/" + "" + "_result.jpg", tmp)
-
-
-
-# # bilinear interpolation
-# a = original[0] - math.floor(original[0])
-# b = original[1] - math.floor(original[1])
-
-# bottom_left = (math.floor(original[0]), math.floor(original[1])) 
-# bottom_right = (math.ceil(original[0]), math.floor(original[1]))
-# top_left = (math.floor(original[0]), math.ceil(original[1]))
-# top_right = (math.ceil(original[0]), math.ceil(original[1]))
-
-# color = (1 - a)*(1 - b)*im1[bottom_left] + a*(1 - b)*im1[bottom_right] + a*b*im1[top_right] + (1 - a)*b*im1[top_left]
-# tmp[i, j] = color
+plt.imsave(outputDir + "/" + "" + "__result.jpg", tmp)
