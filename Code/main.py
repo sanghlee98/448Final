@@ -29,8 +29,8 @@ inputDir = '../Images/'
 outputDir = '../Samples/'
 
 # 1. Collect correspondence pairs
-im1 = Read(inputDir + "a_1.jpeg")
-im2 = Read(inputDir + "a_2.jpeg")
+im1 = Read(inputDir + "d_2.jpeg")
+im2 = Read(inputDir + "d_1.jpeg")
 src, dst = get_points(im1, im2)
 
 
@@ -65,44 +65,32 @@ x_max = max(len(im1)-1, right_top[0], right_bot[0])
 y_min = min(0, left_top[1], right_top[1])
 y_max = max(len(im1[0])-1, left_bot[1], right_bot[1])
 
-width = x_max - x_min
-height = y_max - y_min
-tmp = np.array(np.zeros((width, height, 3), dtype=np.float32))
+width = x_max - x_min + 1
+height = y_max - y_min + 1
+tmp = np.array(np.zeros((height, width, 3), dtype=np.float32))
 
 # 4. Perform inverse warp
+# Fix this part to do proper inverse warping
 H_inverse = np.linalg.inv(H)
-for i in range(0, len(im1)):
-    for j in range(0, len(im1[0])):
-        store = np.dot(H, [i, j, 1])
-        store = np.array([store[0]/store[2], store[1]/store[2]]).astype(int)
-        original = np.dot(H_inverse, [store[0], store[1], 1])
-        original = np.array([original[0]/original[2], original[1]/original[2]])
-        original[0] = np.clip(original[0], 0, len(im1) - 1)
-        original[1] = np.clip(original[1], 0, len(im1[0]) - 1)
-
-        # perform bilinear interpolation on 4 coordinates
-        a = original[0] - math.floor(original[0])
-        b = original[1] - math.floor(original[1])
-        
-        # interpolate
-        bottom_left = (math.floor(original[0]), math.floor(original[1])) 
-        bottom_right = (math.ceil(original[0]), math.floor(original[1]))
-        top_left = (math.floor(original[0]), math.ceil(original[1]))
-        top_right = (math.ceil(original[0]), math.ceil(original[1]))
-
-        # weighted terms
-        bottom_left_color = (1-a) * (1-b) * im1[bottom_left[0]][bottom_left[1]]
-        bottom_right_color = a * (1-b) * im1[bottom_right[0]][bottom_right[1]]
-        top_left_color = a * b * im1[top_left[0]][top_left[1]]
-        top_right_color = (1-a) * b * im1[top_right[0]][top_right[1]]
-
-        # dont know what to put for the index of tmp
-        # tmp[][] = bottom_left_color + bottom_right_color + top_left_color + top_right_color
 
 # 5. Overlay remaining image content onto the warped image content
-start = [-x_min, -y_min]
-for i in range(0, len(im2)):
-    for j in range(0, len(im2[0])):
-        tmp[start[1] + i][start[0] + j] = im2[i][j]
+# start = [-x_min, -y_min]
+# for i in range(0, len(im2) - 1):
+#     for j in range(0, len(im2[0]) -1):
+#         tmp[start[1] + i][start[0] + j] = im2[i][j]
 
 plt.imsave(outputDir + "/" + "" + "_result.jpg", tmp)
+
+
+
+# # bilinear interpolation
+# a = original[0] - math.floor(original[0])
+# b = original[1] - math.floor(original[1])
+
+# bottom_left = (math.floor(original[0]), math.floor(original[1])) 
+# bottom_right = (math.ceil(original[0]), math.floor(original[1]))
+# top_left = (math.floor(original[0]), math.ceil(original[1]))
+# top_right = (math.ceil(original[0]), math.ceil(original[1]))
+
+# color = (1 - a)*(1 - b)*im1[bottom_left] + a*(1 - b)*im1[bottom_right] + a*b*im1[top_right] + (1 - a)*b*im1[top_left]
+# tmp[i, j] = color
